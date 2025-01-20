@@ -105,12 +105,9 @@ const SignUp = () => {
               theme="light"
               providers={[]}
               view="sign_up"
-              redirectTo="/dashboard"
-              options={{
-                emailRedirectTo: `${window.location.origin}/dashboard`,
-                data: {
-                  user_type: userType,
-                },
+              redirectTo={`${window.location.origin}/dashboard`}
+              additionalData={{
+                user_type: userType,
               }}
             />
           </CardContent>
