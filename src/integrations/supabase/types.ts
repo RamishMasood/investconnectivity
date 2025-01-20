@@ -9,6 +9,35 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          startup_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          startup_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          startup_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           bio: string | null
@@ -78,6 +107,39 @@ export type Database = {
           owner_id?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          plan_type: string
+          start_date: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          plan_type: string
+          start_date?: string
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          plan_type?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

@@ -50,6 +50,11 @@ export const Navbar = () => {
             </Link>
             {user ? (
               <>
+                <Link to="/dashboard">
+                  <Button variant="outline" className="mr-4">
+                    Dashboard
+                  </Button>
+                </Link>
                 <Button variant="outline" onClick={handleSignOut}>
                   Sign Out
                 </Button>
@@ -105,9 +110,16 @@ export const Navbar = () => {
               </Link>
               <div className="mt-4 space-y-2">
                 {user ? (
-                  <Button variant="outline" onClick={handleSignOut} className="w-full">
-                    Sign Out
-                  </Button>
+                  <>
+                    <Link to="/dashboard" className="block">
+                      <Button variant="outline" className="w-full mb-2">
+                        Dashboard
+                      </Button>
+                    </Link>
+                    <Button variant="outline" onClick={handleSignOut} className="w-full">
+                      Sign Out
+                    </Button>
+                  </>
                 ) : (
                   <>
                     <Link to="/signin" className="block">
