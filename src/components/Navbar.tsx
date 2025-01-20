@@ -27,10 +27,14 @@ export const Navbar = () => {
             <Link to="/contact" className="text-gray-700 hover:text-primary px-3 py-2">
               Contact
             </Link>
-            <Button variant="outline" className="ml-4">
-              Sign In
-            </Button>
-            <Button>Get Started</Button>
+            <Link to="/signin">
+              <Button variant="outline" className="ml-4">
+                Sign In
+              </Button>
+            </Link>
+            <Link to="/signup">
+              <Button>Get Started</Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -69,10 +73,14 @@ export const Navbar = () => {
                 Contact
               </Link>
               <div className="mt-4 space-y-2">
-                <Button variant="outline" className="w-full">
-                  Sign In
-                </Button>
-                <Button className="w-full">Get Started</Button>
+                <Link to="/signin" className="block">
+                  <Button variant="outline" className="w-full">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/signup" className="block">
+                  <Button className="w-full">Get Started</Button>
+                </Link>
               </div>
             </div>
           </div>

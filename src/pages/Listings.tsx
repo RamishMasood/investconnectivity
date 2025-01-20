@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Building2, MapPin, Banknote } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const Listings = () => {
   const listings = [
@@ -74,9 +76,9 @@ const Listings = () => {
                       <MapPin className="h-5 w-5 mr-2 text-primary" />
                       <span className="text-sm">{listing.location}</span>
                     </div>
-                    <button className="w-full mt-4 bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors">
-                      View Details
-                    </button>
+                    <Link to={`/startup/${listing.id}`}>
+                      <Button className="w-full">View Details</Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
