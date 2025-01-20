@@ -18,13 +18,32 @@ const SignUp = () => {
       if (event === "SIGNED_IN" && session) {
         navigate("/");
       }
+      if (event === "USER_UPDATED") {
+        const checkSession = async () => {
+          const { error } = await supabase.auth.getSession();
+          if (error) {
+            setError(getErrorMessage(error));
+          }
+        };
+        checkSession();
+      }
+      if (event === "SIGNED_OUT") {
+        setError(""); // Clear errors on sign out
+      }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleError = (error: AuthError) => {
-    setError(error.message);
+  const getErrorMessage = (error: AuthError) => {
+    switch (error.message) {
+      case "Invalid login credentials":
+        return "Invalid email or password. Please check your credentials and try again.";
+      case "Email not confirmed":
+        return "Please verify your email address before signing in.";
+      default:
+        return error.message;
+    }
   };
 
   return (
@@ -47,7 +66,6 @@ const SignUp = () => {
               appearance={{ theme: ThemeSupa }}
               theme="light"
               providers={[]}
-              onError={handleError}
               view="sign_up"
             />
           </CardContent>
