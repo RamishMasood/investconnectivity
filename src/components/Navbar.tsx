@@ -1,10 +1,31 @@
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
   return (
     <nav className="bg-white shadow-sm">
@@ -27,14 +48,24 @@ export const Navbar = () => {
             <Link to="/contact" className="text-gray-700 hover:text-primary px-3 py-2">
               Contact
             </Link>
-            <Link to="/signin">
-              <Button variant="outline" className="ml-4">
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/signup">
-              <Button>Get Started</Button>
-            </Link>
+            {user ? (
+              <>
+                <Button variant="outline" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/signin">
+                  <Button variant="outline" className="ml-4">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button>Get Started</Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -73,14 +104,22 @@ export const Navbar = () => {
                 Contact
               </Link>
               <div className="mt-4 space-y-2">
-                <Link to="/signin" className="block">
-                  <Button variant="outline" className="w-full">
-                    Sign In
+                {user ? (
+                  <Button variant="outline" onClick={handleSignOut} className="w-full">
+                    Sign Out
                   </Button>
-                </Link>
-                <Link to="/signup" className="block">
-                  <Button className="w-full">Get Started</Button>
-                </Link>
+                ) : (
+                  <>
+                    <Link to="/signin" className="block">
+                      <Button variant="outline" className="w-full">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/signup" className="block">
+                      <Button className="w-full">Get Started</Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

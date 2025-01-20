@@ -9,7 +9,78 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          bio: string | null
+          company_name: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Insert: {
+          bio?: string | null
+          company_name?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Update: {
+          bio?: string | null
+          company_name?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Relationships: []
+      }
+      startups: {
+        Row: {
+          category: string
+          contact_email: string
+          contact_phone: string | null
+          created_at: string
+          description: string
+          id: string
+          investment_range: string
+          location: string
+          owner_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          contact_email: string
+          contact_phone?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          investment_range: string
+          location: string
+          owner_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          contact_email?: string
+          contact_phone?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          investment_range?: string
+          location?: string
+          owner_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +89,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_type: "investor" | "entrepreneur"
     }
     CompositeTypes: {
       [_ in never]: never
