@@ -9,11 +9,13 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { AuthError } from "@supabase/supabase-js";
+import { useToast } from "@/hooks/use-toast";
 
 const SignUp = () => {
   const [error, setError] = useState<string>("");
   const [userType, setUserType] = useState<"investor" | "entrepreneur" | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -24,13 +26,7 @@ const SignUp = () => {
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
-            .single();
-
-          if (profileError && profileError.code === 'PGRST116') {
-            // Profile doesn't exist yet, it will be created by the database trigger
-            navigate("/dashboard");
-            return;
-          }
+            .maybeSingle();
 
           if (profileError) {
             console.error('Error checking profile:', profileError);
@@ -38,7 +34,14 @@ const SignUp = () => {
             return;
           }
 
-          navigate("/dashboard");
+          // If profile exists, redirect to dashboard
+          if (profile) {
+            toast({
+              title: "Welcome to InvestSphere!",
+              description: "Your account has been created successfully.",
+            });
+            navigate("/dashboard");
+          }
         } catch (err) {
           console.error('Error during sign up:', err);
           setError('An unexpected error occurred. Please try again.');
@@ -59,7 +62,7 @@ const SignUp = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const getErrorMessage = (error: AuthError) => {
     switch (error.message) {
