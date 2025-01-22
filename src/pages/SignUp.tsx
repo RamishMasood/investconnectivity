@@ -16,9 +16,27 @@ const SignUp = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session) {
-        navigate("/dashboard");
+        try {
+          // Check if profile exists
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profileError && profileError.code !== 'PGRST116') {
+            console.error('Error checking profile:', profileError);
+            setError('Error creating user profile. Please try again.');
+            return;
+          }
+
+          navigate("/dashboard");
+        } catch (err) {
+          console.error('Error during sign up:', err);
+          setError('An unexpected error occurred. Please try again.');
+        }
       }
       if (event === "USER_UPDATED") {
         const checkSession = async () => {
