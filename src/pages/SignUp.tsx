@@ -26,7 +26,13 @@ const SignUp = () => {
             .eq('id', session.user.id)
             .single();
 
-          if (profileError && profileError.code !== 'PGRST116') {
+          if (profileError && profileError.code === 'PGRST116') {
+            // Profile doesn't exist yet, it will be created by the database trigger
+            navigate("/dashboard");
+            return;
+          }
+
+          if (profileError) {
             console.error('Error checking profile:', profileError);
             setError('Error creating user profile. Please try again.');
             return;
