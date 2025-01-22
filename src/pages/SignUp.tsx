@@ -21,10 +21,15 @@ const SignUp = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth event:", event);
+      console.log("Session:", session);
+      console.log("User type:", userType);
       
       if (event === "SIGNED_IN" && session) {
         setIsLoading(true);
         try {
+          // Add delay to ensure trigger function has time to complete
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           // Check if profile exists
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
@@ -45,11 +50,20 @@ const SignUp = () => {
 
           // If profile exists, redirect to dashboard
           if (profile) {
+            console.log("Profile created successfully:", profile);
             toast({
               title: "Welcome to InvestSphere!",
               description: "Your account has been created successfully.",
             });
             navigate("/dashboard");
+          } else {
+            console.error('Profile not found after creation');
+            setError('Error creating user profile. Please try again.');
+            toast({
+              title: "Error",
+              description: "Profile creation failed. Please try again.",
+              variant: "destructive",
+            });
           }
         } catch (err) {
           console.error('Error during sign up:', err);
@@ -66,7 +80,7 @@ const SignUp = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, toast]);
+  }, [navigate, toast, userType]);
 
   if (isLoading) {
     return (
