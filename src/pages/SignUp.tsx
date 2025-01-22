@@ -8,18 +8,22 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import type { AuthError } from "@supabase/supabase-js";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const SignUp = () => {
   const [error, setError] = useState<string>("");
   const [userType, setUserType] = useState<"investor" | "entrepreneur" | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth event:", event);
+      
       if (event === "SIGNED_IN" && session) {
+        setIsLoading(true);
         try {
           // Check if profile exists
           const { data: profile, error: profileError } = await supabase
@@ -31,6 +35,11 @@ const SignUp = () => {
           if (profileError) {
             console.error('Error checking profile:', profileError);
             setError('Error creating user profile. Please try again.');
+            toast({
+              title: "Error",
+              description: "There was a problem creating your profile. Please try again.",
+              variant: "destructive",
+            });
             return;
           }
 
@@ -45,35 +54,34 @@ const SignUp = () => {
         } catch (err) {
           console.error('Error during sign up:', err);
           setError('An unexpected error occurred. Please try again.');
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
         }
-      }
-      if (event === "USER_UPDATED") {
-        const checkSession = async () => {
-          const { error } = await supabase.auth.getSession();
-          if (error) {
-            setError(getErrorMessage(error));
-          }
-        };
-        checkSession();
-      }
-      if (event === "SIGNED_OUT") {
-        setError("");
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
 
-  const getErrorMessage = (error: AuthError) => {
-    switch (error.message) {
-      case "Invalid login credentials":
-        return "Invalid email or password. Please check your credentials and try again.";
-      case "Email not confirmed":
-        return "Please verify your email address before signing in.";
-      default:
-        return error.message;
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-muted-foreground">Creating your account...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!userType) {
     return (
@@ -128,7 +136,19 @@ const SignUp = () => {
             )}
             <Auth
               supabaseClient={supabase}
-              appearance={{ theme: ThemeSupa }}
+              appearance={{ 
+                theme: ThemeSupa,
+                style: {
+                  button: {
+                    background: '#1E40AF',
+                    color: 'white',
+                    borderRadius: '0.375rem',
+                  },
+                  anchor: {
+                    color: '#1E40AF',
+                  },
+                },
+              }}
               theme="light"
               providers={[]}
               view="sign_up"

@@ -7,44 +7,79 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { AuthError } from "@supabase/supabase-js";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const SignIn = () => {
   const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth event:", event);
+      
       if (event === "SIGNED_IN" && session) {
-        navigate("/");
-      }
-      if (event === "USER_UPDATED") {
-        const checkSession = async () => {
-          const { error } = await supabase.auth.getSession();
-          if (error) {
-            setError(getErrorMessage(error));
+        setIsLoading(true);
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+            toast({
+              title: "Error",
+              description: "There was a problem signing you in. Please try again.",
+              variant: "destructive",
+            });
+            return;
           }
-        };
-        checkSession();
+
+          if (profile) {
+            toast({
+              title: "Welcome back!",
+              description: "You have successfully signed in.",
+            });
+            navigate("/dashboard");
+          }
+        } catch (err) {
+          console.error('Error during sign in:', err);
+          setError('An unexpected error occurred. Please try again.');
+        } finally {
+          setIsLoading(false);
+        }
       }
+      
       if (event === "SIGNED_OUT") {
-        setError(""); // Clear errors on sign out
+        setError("");
+        toast({
+          title: "Signed out",
+          description: "You have been successfully signed out.",
+        });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
-  const getErrorMessage = (error: AuthError) => {
-    switch (error.message) {
-      case "Invalid login credentials":
-        return "Invalid email or password. Please check your credentials and try again.";
-      case "Email not confirmed":
-        return "Please verify your email address before signing in.";
-      default:
-        return error.message;
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-muted-foreground">Signing you in...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -63,7 +98,19 @@ const SignIn = () => {
             )}
             <Auth
               supabaseClient={supabase}
-              appearance={{ theme: ThemeSupa }}
+              appearance={{ 
+                theme: ThemeSupa,
+                style: {
+                  button: {
+                    background: '#1E40AF',
+                    color: 'white',
+                    borderRadius: '0.375rem',
+                  },
+                  anchor: {
+                    color: '#1E40AF',
+                  },
+                },
+              }}
               theme="light"
               providers={[]}
             />
