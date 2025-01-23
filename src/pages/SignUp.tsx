@@ -21,8 +21,6 @@ const SignUp = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth event:", event);
-      console.log("Session:", session);
-      console.log("User type:", userType);
       
       if (event === "SIGNED_IN" && session) {
         setIsLoading(true);
@@ -80,7 +78,7 @@ const SignUp = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, toast, userType]);
+  }, [navigate, toast]);
 
   if (isLoading) {
     return (

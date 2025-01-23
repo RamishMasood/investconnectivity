@@ -26,7 +26,6 @@ const SignIn = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth event:", event);
-      console.log("Session:", session);
       
       if (event === "SIGNED_IN" && session) {
         setIsLoading(true);
@@ -38,7 +37,7 @@ const SignIn = () => {
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
 
           if (profileError) {
             console.error('Error fetching profile:', profileError);
