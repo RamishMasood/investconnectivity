@@ -23,6 +23,9 @@ const SignIn = () => {
       if (event === "SIGNED_IN" && session) {
         setIsLoading(true);
         try {
+          // Add delay to ensure profile is available
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
@@ -31,6 +34,7 @@ const SignIn = () => {
 
           if (profileError) {
             console.error('Error fetching profile:', profileError);
+            setError('Error fetching user profile. Please try again.');
             toast({
               title: "Error",
               description: "There was a problem signing you in. Please try again.",
@@ -45,21 +49,25 @@ const SignIn = () => {
               description: "You have successfully signed in.",
             });
             navigate("/dashboard");
+          } else {
+            setError('Profile not found. Please try signing up first.');
+            toast({
+              title: "Error",
+              description: "Profile not found. Please try signing up first.",
+              variant: "destructive",
+            });
           }
         } catch (err) {
           console.error('Error during sign in:', err);
           setError('An unexpected error occurred. Please try again.');
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred. Please try again.",
+            variant: "destructive",
+          });
         } finally {
           setIsLoading(false);
         }
-      }
-      
-      if (event === "SIGNED_OUT") {
-        setError("");
-        toast({
-          title: "Signed out",
-          description: "You have been successfully signed out.",
-        });
       }
     });
 
