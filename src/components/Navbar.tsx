@@ -4,27 +4,48 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { useToast } from "@/hooks/use-toast";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
+    // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      setIsLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Navbar auth event:", event);
       setUser(session?.user ?? null);
+      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account.",
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem signing you out. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -48,27 +69,31 @@ export const Navbar = () => {
             <Link to="/contact" className="text-gray-700 hover:text-primary px-3 py-2">
               Contact
             </Link>
-            {user ? (
+            {!isLoading && (
               <>
-                <Link to="/dashboard">
-                  <Button variant="outline" className="mr-4">
-                    Dashboard
-                  </Button>
-                </Link>
-                <Button variant="outline" onClick={handleSignOut}>
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Link to="/signin">
-                  <Button variant="outline" className="ml-4">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link to="/signup">
-                  <Button>Get Started</Button>
-                </Link>
+                {user ? (
+                  <>
+                    <Link to="/dashboard">
+                      <Button variant="outline" className="mr-4">
+                        Dashboard
+                      </Button>
+                    </Link>
+                    <Button variant="outline" onClick={handleSignOut}>
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/signin">
+                      <Button variant="outline" className="ml-4">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/signup">
+                      <Button>Get Started</Button>
+                    </Link>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -108,31 +133,33 @@ export const Navbar = () => {
               >
                 Contact
               </Link>
-              <div className="mt-4 space-y-2">
-                {user ? (
-                  <>
-                    <Link to="/dashboard" className="block">
-                      <Button variant="outline" className="w-full mb-2">
-                        Dashboard
+              {!isLoading && (
+                <div className="mt-4 space-y-2">
+                  {user ? (
+                    <>
+                      <Link to="/dashboard" className="block">
+                        <Button variant="outline" className="w-full mb-2">
+                          Dashboard
+                        </Button>
+                      </Link>
+                      <Button variant="outline" onClick={handleSignOut} className="w-full">
+                        Sign Out
                       </Button>
-                    </Link>
-                    <Button variant="outline" onClick={handleSignOut} className="w-full">
-                      Sign Out
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/signin" className="block">
-                      <Button variant="outline" className="w-full">
-                        Sign In
-                      </Button>
-                    </Link>
-                    <Link to="/signup" className="block">
-                      <Button className="w-full">Get Started</Button>
-                    </Link>
-                  </>
-                )}
-              </div>
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/signin" className="block">
+                        <Button variant="outline" className="w-full">
+                          Sign In
+                        </Button>
+                      </Link>
+                      <Link to="/signup" className="block">
+                        <Button className="w-full">Get Started</Button>
+                      </Link>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}

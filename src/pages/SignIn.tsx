@@ -17,8 +17,16 @@ const SignIn = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Check if user is already signed in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/dashboard");
+      }
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth event:", event);
+      console.log("Session:", session);
       
       if (event === "SIGNED_IN" && session) {
         setIsLoading(true);
