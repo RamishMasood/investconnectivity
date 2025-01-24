@@ -25,8 +25,8 @@ const SignUp = () => {
       if (event === "SIGNED_IN" && session) {
         setIsLoading(true);
         try {
-          // Add delay to ensure trigger function has time to complete
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Add longer delay to ensure trigger function completes
+          await new Promise(resolve => setTimeout(resolve, 2000));
           
           // Check if profile exists
           const { data: profile, error: profileError } = await supabase
@@ -43,6 +43,8 @@ const SignUp = () => {
               description: "There was a problem creating your profile. Please try again.",
               variant: "destructive",
             });
+            // Sign out the user since profile creation failed
+            await supabase.auth.signOut();
             return;
           }
 
@@ -62,6 +64,8 @@ const SignUp = () => {
               description: "Profile creation failed. Please try again.",
               variant: "destructive",
             });
+            // Sign out the user since profile creation failed
+            await supabase.auth.signOut();
           }
         } catch (err) {
           console.error('Error during sign up:', err);
@@ -71,6 +75,8 @@ const SignUp = () => {
             description: "An unexpected error occurred. Please try again.",
             variant: "destructive",
           });
+          // Sign out the user if there was an error
+          await supabase.auth.signOut();
         } finally {
           setIsLoading(false);
         }

@@ -31,7 +31,7 @@ const SignIn = () => {
         setIsLoading(true);
         try {
           // Add delay to ensure profile is available
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 2000));
           
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
@@ -57,12 +57,15 @@ const SignIn = () => {
             });
             navigate("/dashboard");
           } else {
+            console.error('Profile not found');
             setError('Profile not found. Please try signing up first.');
             toast({
               title: "Error",
               description: "Profile not found. Please try signing up first.",
               variant: "destructive",
             });
+            // Sign out the user since their profile is missing
+            await supabase.auth.signOut();
           }
         } catch (err) {
           console.error('Error during sign in:', err);
