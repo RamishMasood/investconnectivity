@@ -30,9 +30,10 @@ const SignIn = () => {
       if (event === "SIGNED_IN" && session) {
         setIsLoading(true);
         try {
-          // Add delay to ensure profile is available
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          // Add longer delay to ensure profile is created
+          await new Promise(resolve => setTimeout(resolve, 3000));
           
+          // Check if profile exists
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
@@ -40,23 +41,18 @@ const SignIn = () => {
             .maybeSingle();
 
           if (profileError) {
-            console.error('Error fetching profile:', profileError);
-            setError('Error fetching user profile. Please try again.');
+            console.error('Error checking profile:', profileError);
+            setError('Error checking user profile. Please try again.');
             toast({
               title: "Error",
               description: "There was a problem signing you in. Please try again.",
               variant: "destructive",
             });
+            await supabase.auth.signOut();
             return;
           }
 
-          if (profile) {
-            toast({
-              title: "Welcome back!",
-              description: "You have successfully signed in.",
-            });
-            navigate("/dashboard");
-          } else {
+          if (!profile) {
             console.error('Profile not found');
             setError('Profile not found. Please try signing up first.');
             toast({
@@ -64,9 +60,16 @@ const SignIn = () => {
               description: "Profile not found. Please try signing up first.",
               variant: "destructive",
             });
-            // Sign out the user since their profile is missing
             await supabase.auth.signOut();
+            return;
           }
+
+          console.log("Profile found successfully:", profile);
+          toast({
+            title: "Welcome back!",
+            description: "You have successfully signed in.",
+          });
+          navigate("/dashboard");
         } catch (err) {
           console.error('Error during sign in:', err);
           setError('An unexpected error occurred. Please try again.');
@@ -75,6 +78,7 @@ const SignIn = () => {
             description: "An unexpected error occurred. Please try again.",
             variant: "destructive",
           });
+          await supabase.auth.signOut();
         } finally {
           setIsLoading(false);
         }

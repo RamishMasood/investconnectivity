@@ -26,7 +26,7 @@ const SignUp = () => {
         setIsLoading(true);
         try {
           // Add longer delay to ensure trigger function completes
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 3000));
           
           // Check if profile exists
           const { data: profile, error: profileError } = await supabase
@@ -43,20 +43,11 @@ const SignUp = () => {
               description: "There was a problem creating your profile. Please try again.",
               variant: "destructive",
             });
-            // Sign out the user since profile creation failed
             await supabase.auth.signOut();
             return;
           }
 
-          // If profile exists, redirect to dashboard
-          if (profile) {
-            console.log("Profile created successfully:", profile);
-            toast({
-              title: "Welcome to InvestSphere!",
-              description: "Your account has been created successfully.",
-            });
-            navigate("/dashboard");
-          } else {
+          if (!profile) {
             console.error('Profile not found after creation');
             setError('Error creating user profile. Please try again.');
             toast({
@@ -64,9 +55,16 @@ const SignUp = () => {
               description: "Profile creation failed. Please try again.",
               variant: "destructive",
             });
-            // Sign out the user since profile creation failed
             await supabase.auth.signOut();
+            return;
           }
+
+          console.log("Profile created successfully:", profile);
+          toast({
+            title: "Welcome to InvestSphere!",
+            description: "Your account has been created successfully.",
+          });
+          navigate("/dashboard");
         } catch (err) {
           console.error('Error during sign up:', err);
           setError('An unexpected error occurred. Please try again.');
@@ -75,7 +73,6 @@ const SignUp = () => {
             description: "An unexpected error occurred. Please try again.",
             variant: "destructive",
           });
-          // Sign out the user if there was an error
           await supabase.auth.signOut();
         } finally {
           setIsLoading(false);
